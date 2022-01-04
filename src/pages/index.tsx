@@ -5,6 +5,8 @@ import { RcFile } from 'antd/lib/upload/interface';
 import XLSX from 'xlsx';
 import { useEffect, useState } from 'react';
 import FileSaver from 'file-saver';
+import moment from 'moment';
+import ex from 'umi/dist';
 
 const { Dragger } = Upload;
 
@@ -20,7 +22,12 @@ const index = () => {
 
   useEffect(() => {
     if (excelData.length > 0) {
-      const encrypt = excelData.map(item => {
+      const encrypt = excelData.map((item,index) => {
+
+        setProcessModalVisible(true);
+        setProcessPercent(index / excelData.length);
+
+
         if (item[0] !== '手机号码') {
           return {
             mobile: Buffer.from(item[0].toString()).toString('base64'),
@@ -42,16 +49,9 @@ const index = () => {
 
   useEffect(() => {
     console.log(encryptData);
+    setProcessModalVisible(false);
     if (encryptData.length > 0) {
-      const workbook = XLSX.utils.book_new();
-      const workSheet = XLSX.utils.json_to_sheet(encryptData, {
-        header: ['mobile', 'content', 'desensitization'],
-        skipHeader: true,
-      });
-
-      XLSX.utils.book_append_sheet(workbook, workSheet, '加密数据');
-      const wbout = XLSX.write(workbook, { bookType: 'xlsx', bookSST: false, type: 'array' });
-      FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), `加密短信模板.xlsx`);
+      setResultModalVisible(true);
     }
 
   }, [encryptData]);
@@ -93,12 +93,12 @@ const index = () => {
       </div>
 
       <Modal title='处理中'
-        visible={processModalVisible}
-        onCancel={() => {
-          setProcessModalVisible(false);
-        }}
-        destroyOnClose={true}
-        footer={null}
+             visible={processModalVisible}
+             onCancel={() => {
+               setProcessModalVisible(false);
+             }}
+             destroyOnClose={true}
+             footer={null}
       >
         <Progress
           strokeColor={{
@@ -111,25 +111,37 @@ const index = () => {
       </Modal>
 
       <Modal title='加密结果'
-        visible={resultModalVisible}
-        onOk={() => {
-          setResultModalVisible(false);
-        }}
-        footer={null}
+             visible={resultModalVisible}
+             onOk={() => {
+               setResultModalVisible(false);
+             }}
+             footer={null}
       >
         <Result
           status='success'
           title='加密处理完成'
-          subTitle='Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait.'
+          subTitle={`合计${encryptData.length - 1}条加密数据`}
           extra={[
-            <Button type='primary' key='console' onClick={() => setResultModalVisible(false)}>
-              确定
+            <Button type='primary' key='console' onClick={() => {
+
+              const workbook = XLSX.utils.book_new();
+              const workSheet = XLSX.utils.json_to_sheet(encryptData, {
+                header: ['mobile', 'content', 'desensitization'],
+                skipHeader: true,
+              });
+
+              XLSX.utils.book_append_sheet(workbook, workSheet, '加密数据');
+              const wbout = XLSX.write(workbook, { bookType: 'xlsx', bookSST: false, type: 'array' });
+              FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), `加密短信-${moment().format('YYYYMMDHHmmdssSSS')}.xlsx`);
+              setResultModalVisible(false);
+            }}>
+              下载
             </Button>,
           ]}
         />
       </Modal>
 
-      <SettingOutlined className={styles.settings} spin={true} onClick={() => setSettingsVisible(true)} />
+      <SettingOutlined className={styles.settings} spin={false} onClick={() => setSettingsVisible(true)} />
       <Drawer
         title='设置'
         placement='right'
