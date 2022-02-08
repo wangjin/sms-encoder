@@ -4,11 +4,17 @@ import { InboxOutlined, SettingOutlined } from '@ant-design/icons';
 import { RcFile } from 'antd/lib/upload/interface';
 import XLSX from 'xlsx';
 import { useEffect, useState } from 'react';
+// @ts-ignore
 import FileSaver from 'file-saver';
 import moment from 'moment';
-import ex from 'umi/dist';
 
 const { Dragger } = Upload;
+
+interface EncryptedData {
+  mobile: string,
+  content: string,
+  desensitization: string,
+}
 
 const index = () => {
 
@@ -16,13 +22,13 @@ const index = () => {
   const [processModalVisible, setProcessModalVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [processPercent, setProcessPercent] = useState(0);
-  const [excelData, setExcelData] = useState([]);
-  const [encryptData, setEncryptData] = useState([]);
+  const [excelData, setExcelData] = useState<string[]>([]);
+  const [encryptData, setEncryptData] = useState<EncryptedData[]>([]);
 
 
   useEffect(() => {
     if (excelData.length > 0) {
-      const encrypt = excelData.map((item,index) => {
+      const encrypt = excelData.map((item, index) => {
 
         setProcessModalVisible(true);
         setProcessPercent(index / excelData.length);
