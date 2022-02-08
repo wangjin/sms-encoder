@@ -11,8 +11,17 @@ import moment from 'moment';
 const { Dragger } = Upload;
 
 interface EncryptedData {
+  /**
+   * 手机号码
+   */
   mobile: string,
+  /**
+   * 短信内容
+   */
   content: string,
+  /**
+   * 脱敏后手机号码
+   */
   desensitization: string,
 }
 
@@ -26,21 +35,27 @@ const index = () => {
   const [encryptData, setEncryptData] = useState<EncryptedData[]>([]);
 
 
+  /**
+   * 监听excelData数据变化，对excelData进行加密
+   */
   useEffect(() => {
     if (excelData.length > 0) {
       const encrypt = excelData.map((item, index) => {
 
+        // 显示进度条
         setProcessModalVisible(true);
         setProcessPercent(index / excelData.length);
 
-
+        // 处理加密
         if (item[0] !== '手机号码') {
+          // 表头
           return {
             mobile: Buffer.from(item[0].toString()).toString('base64'),
             content: item[1],
             desensitization: `${item[0].toString().substring(0, 3)}****${item[0].toString().substring(7, 11)}`,
           };
         } else {
+          // 数据
           return {
             mobile: '加密手机号码',
             content: '发送内容',
@@ -48,11 +63,15 @@ const index = () => {
           };
         }
       }).filter(item => item !== undefined);
+      // 保存加密数据
       setEncryptData(encrypt);
     }
 
   }, [excelData]);
 
+  /**
+   * 监听encryptData数据变化
+   */
   useEffect(() => {
     console.log(encryptData);
     setProcessModalVisible(false);
@@ -72,14 +91,18 @@ const index = () => {
             const reader = new FileReader();
 
             let data: any[] = [];
-
+            // 读取上传的excel数据
             reader.onload = (e) => {
               try {
-                // @ts-ignore
-                const workbook = XLSX.read(e.target.result, { type: 'binary' });
-                data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-                setExcelData(data);
-
+                if (e.target) {
+                  // 读取excel内容
+                  const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                  data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+                  // 读取完成后保存数据，当前数据为明文状态
+                  setExcelData(data);
+                } else {
+                  console.log('事件为空');
+                }
               } catch (e) {
                 console.log('excel转json失败', e);
               }
