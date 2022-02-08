@@ -118,6 +118,9 @@ const index = () => {
             <InboxOutlined />
           </p>
           <p className='ant-upload-text'>点击选择文件或将文件拖拽到这里进行加密</p>
+          <p className="ant-upload-hint">
+            文件必须按照模板要求填写，否则无法加密。模板可点击右上角 <SettingOutlined className={styles.settingsHint} spin={false} /> 中的'模板下载'进行下载。
+          </p>
         </Dragger>
       </div>
 
