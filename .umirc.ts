@@ -8,4 +8,10 @@ export default defineConfig({
     { path: '/', component: '@/pages/index' },
   ],
   fastRefresh: {},
+  electronBuilder: {
+    builderOptions: {
+      appId: 'com.eqy.sms.encoder',
+      productName: '翼企云短信加密',
+    },
+  },
 });
